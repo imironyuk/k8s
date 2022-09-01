@@ -1,4 +1,4 @@
-## deployment.yaml
+## mindbox.yaml
 
 ```yaml
 apiVersion: apps/v1
