@@ -5,25 +5,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
-  labels:
-    app: nginx
-    maintainer: Daniil # просто как пример еще одного label
+  labels: # использую рекомендованные лейблы https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.23.1-alpine
+    app.kubernetes.io/component: website
 spec:
   replicas: 4 # количество реплик
   selector:
     matchLabels: # какими pod управляет этот Deployment
-      app: nginx
+      app.kubernetes.io/name: nginx
   template:
     metadata:
       labels:
-        app: nginx # label по которому Kubernetes будем потом выбирать на какую node разместить pod
+        app.kubernetes.io/name: nginx # label по которому Kubernetes будем потом выбирать на какую node разместить pod
     spec:
       affinity:
         preferredDuringSchedulingIgnoredDuringExecution: # желательное правило рпаспределения pod оболочек
         - podAffinityTerm: # анти аффинити значит что распологать на node на которых нет лейбла app=nginx
             labelSelector:
               matchExpressions:
-              - key: app
+              - key: app.kubernetes.io/name
                 operator: In
                 values:
                 - nginx
@@ -41,16 +42,16 @@ spec:
           limits: # пределы ресурсов которые может использовать контейнер
             memory: "150Mi" # попробует больше памяти то будет убить OOMkilled
             cpu: "500m" # больше ресурсов процессора -> попадет в очередь, не будет убит
-        livenessProbe:
+        livenessProbe: # постоянный тест работоспособности контейнера чтобы если он выйдет из строя перезапустить его
           httpGet:
             path: /
             port: 80
-          initialDelaySeconds: 3
-          periodSeconds: 3
-        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe: # не отправлять трафик на pod пока не отработает эта проверка готовности
           httpGet:
             path: /
             port: 80
-          initialDelaySeconds: 3
-          periodSeconds: 3
+          initialDelaySeconds: 5
+          periodSeconds: 5
 ```
