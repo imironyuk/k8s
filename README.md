@@ -34,13 +34,13 @@ spec:
         ports:
         - name: http
           containerPort: 80
-        resources:
-          requests:
+        resources: 
+          requests: # запрашиваемые ресурсы контейнера, по сути необходимый минимум ресурсов свободных на node
             memory: "150Mi"
             cpu: "150m"
-          limits:
-            memory: "150Mi"
-            cpu: "500m"
+          limits: # пределы ресурсов которые может использовать контейнер
+            memory: "150Mi" # попробует больше памяти то будет убить OOMkilled
+            cpu: "500m" # больше ресурсов процессора -> попадет в очередь, не будет убит
         livenessProbe:
           httpGet:
             path: /
