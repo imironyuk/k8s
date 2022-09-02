@@ -1,34 +1,37 @@
 ## mindbox.yaml
 
-```yaml
+```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
-  labels: # использую рекомендованные лейблы https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/
+  labels: # использую рекомендованные https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/
     app.kubernetes.io/name: nginx
     app.kubernetes.io/version: 1.23.1-alpine
     app.kubernetes.io/component: website
 spec:
-  replicas: 4 # количество реплик
+  replicas: 4 # желаемое количество реплик приложения
   selector:
-    matchLabels: # какими pod управляет этот Deployment
+    matchLabels: # какими pod управляет этот Deployment (у которых есть лейбл что ниже)
       app.kubernetes.io/name: nginx
   template:
     metadata:
       labels:
         app.kubernetes.io/name: nginx # label по которому Kubernetes будем потом выбирать на какую node разместить pod
     spec:
-      affinity:
-        preferredDuringSchedulingIgnoredDuringExecution: # желательное правило рпаспределения pod оболочек
-        - podAffinityTerm: # анти аффинити значит что распологать на node на которых нет лейбла app=nginx
-            labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/name
-                operator: In
-                values:
-                - nginx
-            topologyKey: "topology.kubernetes.io/zone" # для расположения на node в разных зонах доступности
+      affinity: # переводится как 'близость', то есть ниже приведена anti близость, то есть не близость
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: # желательное правило рпаспределения pod оболочек
+          - weight: 100 # от 0 до 100, это имеет смысл, когда есть несколько правил, и нужно выбрать, какое из них важнее
+            podAffinityTerm: # анти аффинити значит что распологать на node на которых нет лейбла app.kubernetes.io/name=nginx
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - nginx
+              topologyKey: "topology.kubernetes.io/zone" # чтобы планировщик пытался расположить реплики приложения в разных зонах
+      terminationGracePeriodSeconds: 60 # время которое отводится на остановку Pod перед его завершением
       containers:
       - name: nginx
         image: nginx:1.23.1-alpine # образ nginx используя более безопасную и маленькую в размере версию alpine linux
