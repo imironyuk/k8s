@@ -1,6 +1,7 @@
 ## mindbox.yaml
 
-```apiVersion: apps/v1
+```yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
