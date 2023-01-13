@@ -1,4 +1,4 @@
-## mindbox.yaml
+## kuber.yaml
 
 ```yaml
 apiVersion: apps/v1
